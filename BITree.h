@@ -18,45 +18,55 @@
 
 #include <bits/stdc++.h>
 
+#define BIT_LSB(i) ((i) & -(i))
+
+template <typename T> T prefix_sum(std::vector<T>& tree, int64_t index) {
+    if (index < 0) return 0;
+    T sum = tree[0];
+    for (; index > 0; index -= BIT_LSB(index))
+        sum += tree[index];
+    return sum;
+}
+
 template <typename T>
-void update(std::vector<T>& tree, int64_t index, T value) {
-    while (index < tree.size()) {
+void add(std::vector<T>& tree, int64_t index, T value) {
+    if (index == 0) {
+        tree[0] += value;
+        return;
+    }
+    for (; index < tree.size(); index += BIT_LSB(index))
         tree[index] += value;
-        index += index & (-index);
+}
+
+// convert array to fenwick tree form
+template <typename T> void init(std::vector<T>& tree) {
+    for (int64_t i = 1; i < tree.size(); i++) {
+        int64_t j = i + BIT_LSB(i);
+        if (j < tree.size())
+            tree[j] += tree[i];
     }
 }
 
-template <typename T> T sum(std::vector<T>& tree, int64_t index) {
-    T result = 0;
-    while (index > 0) {
-        result += tree[index];
-        index -= index & (-index);
+// convert fenwick tree array back to array of per element counts
+template <typename T> void fini(std::vector<T>& tree) {
+    for (int64_t i = tree.size() - 1; i > 0; i--) {
+        int64_t j = i + BIT_LSB(i);
+        if (j < tree.size())
+            tree[j] -= tree[i];
     }
-    return result;
 }
 
-template <typename T>
-T query(std::vector<T>& tree, int64_t begin, int64_t end) {
-    if (end >= tree.size() || begin > tree.size()) return 0;
-    return sum<T>(tree, end) - sum<T>(tree, begin);
+template <typename T> T get(std::vector<T>& tree, int64_t index) {
+    return prefix_sum(tree, index) - prefix_sum(tree, index - 1);
+    // return range_sum(tree, index - 1, index);
 }
 
-template <typename T> T valOf(std::vector<T>& tree, int64_t index) {
-    if (index > tree.size()) return 0;
-    return query<T>(tree, index - 1, index);
+template <typename T> void set(std::vector<T>& tree, int64_t index, T value) {
+    add(tree, index, value - get(tree, index));
 }
 
-template <typename T> void set(std::vector<T>& tree, int64_t index, T val) {
-    if (index > tree.size()) return;
-    update<T>(tree, index, val - valOf<T>(tree, index));
-}
 
-template <typename T> std::vector<T> createTree(std::vector<T>& data) {
-    std::vector<T> BITree(data.size() + 1);
-    for (int i = 0; i < data.size(); i++) {
-        update<T>(BITree, i + 1, data[i]);
-    }
-    return BITree;
-}
+
+
 
 #endif // BITREE_H
