@@ -13,48 +13,39 @@
  * @copyright Copyright (c) 2023
  *
  */
-#include <bits/stdc++.h>
 #include "BITree.h"
+#include <bits/stdc++.h>
+#include <boost/multiprecision/cpp_int.hpp>
 
 int main() {
-    bool run = true;
-
-    using datatype = int64_t;
-    const size_t N = (1UL << 20U);
+    using cppint = boost::multiprecision::cpp_int;
     std::random_device rd;
-    std::uniform_int_distribution<datatype> dist(INT64_MIN / N,
-                                                INT64_MAX / N);
 
-    std::cout << "Creating Data" << std::endl;
-    std::vector<datatype> data(N);
-    for (auto& i : data) {
-        i = dist(rd);
+    cppint one = 10;
+    for(int i = 0; i < 13; i++)
+        one *= one;
+    
+    cppint two = one * 2;
+    cppint four = two * 2;
+
+    cppint fct = 1;
+    cppint f_16 = 1;
+
+    std::vector<cppint> copy;
+    for (int i = 0; ; i++) {
+        cppint val = (four/(8*i+1) - two/(8*i+4) - one/(8*i+5) - one/(8*i+6))/f_16;
+        f_16 <<= 4U;
+        fct *= i;
+        if (val == 0) break;
+        copy.push_back(val);
     }
 
-    std::cout << "Indexing Tree" << std::endl;
-    std::vector<datatype> tree = createTree<datatype>(data);
+    init(copy);
 
-    std::cout << "Randomizing" << std::endl;
-
-    size_t i = 0;
-    for (; i < N; i++) {
-        datatype val = dist(rd);
-        data[i] = val;
-        set(tree, i+1, val);
-    }
-
-    std::cout << "Comparing" << std::endl;
-
-    i = 0;
-    for (; i < N; i++) {
-        if (data[i] != valOf(tree, i+1)) {
-            std::cout << "Test Failed! " << std::endl
-                      << "Difference found on " << i << std::endl;
-            break;
-        }
-    }
-    if (i == N) 
-        std::cout << "Tested Successfully" << std::endl;
+    // for (int64_t i = 0; i < copy.size(); i++) {
+    // }
+    std::cout << prefix_sum(copy, copy.size() - 1);
+    std::cout << std::endl;
 
     return 0;
 }
